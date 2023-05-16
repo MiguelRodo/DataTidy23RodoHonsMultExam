@@ -1,0 +1,9 @@
+---
+title: Data for 2023 honours multivariate exam
+format:
+  html:
+    embed-resources: true
+---
+
+# Introduction
+
