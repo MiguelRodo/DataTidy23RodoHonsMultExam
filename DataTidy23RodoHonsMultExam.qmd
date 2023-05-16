@@ -7,3 +7,152 @@ format:
 
 # Introduction
 
+
+```{r}
+#| echo: false
+#| results: hide
+#| message: false
+#| warning: false
+lum_tbl <- openxlsx::read.xlsx(
+  projr::projr_path_get("data-raw", "age_inflammation_data.xlsx"),
+  sheet = "luminex"
+) |>
+  tibble::as_tibble()
+lum_tbl <- lum_tbl |>
+  dplyr::rename(
+    pid = `Donor.ID`,
+    stim = `Stim.condition`
+  )
+colnames(lum_tbl) <- gsub("\\(\\d+\\)", "", colnames(lum_tbl))
+colnames(lum_tbl) <- gsub("\\.|\\-", "", colnames(lum_tbl))
+lum_tbl <- lum_tbl |>
+  dplyr::mutate(
+    dplyr::across(IFNa2:DDimer, as.numeric)
+  )
+(lum_tbl[,1:2]) |> UtilsDataRSV::view_cols()
+(lum_tbl) |> UtilsDataRSV::view_cols()
+lum_tbl <- lum_tbl |>
+  tidyr::pivot_longer(
+    -c(pid, stim),
+    names_to = "protein",
+    values_to = "response"
+  ) |>
+  dplyr::mutate(
+    response = log(response)
+  ) |>
+  dplyr::group_by(
+    protein, pid
+  ) |>
+  dplyr::filter(
+    stim %in% c("Unstim", "H37Rv")
+  ) |>
+  dplyr::summarise(
+    response = response[stim == "H37Rv"] - response[stim == "Unstim"]
+  ) |>
+  dplyr::ungroup()
+if (FALSE) {
+  p <- ggplot(lum_tbl, aes(y = response, x = protein, fill = protein)) +
+    geom_boxplot()
+  ggplot2::ggsave(
+    filename = projr_path_get("cache", "test", "p-lum.pdf")
+  )
+}
+lum_tbl <- lum_tbl |>
+  tidyr::pivot_wider(
+    names_from = "protein",
+    values_from = "response"
+  )
+meta_data_tbl <- openxlsx::read.xlsx(
+  projr::projr_path_get("data-raw", "age_inflammation_data.xlsx"),
+  sheet = "metadata"
+) |>
+  tibble::as_tibble()
+meta_data_tbl <- meta_data_tbl |>
+  dplyr::rename(
+    pid = `Donor.ID`,
+    infxn = `QFT.status`,
+    age = Age,
+    sex = Gender,
+    ethnicity = Ethnicity
+  )
+usethis::use_data(lum_tbl, overwrite = TRUE)
+usethis::use_data(meta_data_tbl, overwrite = TRUE)
+```
+
+
+```{r}
+#| echo: false
+#| results: hide
+data("tmax17ExcTbl", package = "VaccCompData")
+data("bl17ExcTbl", package = "VaccCompData")
+
+tcell_response_data_memory <- tmax17ExcTbl |>
+  tibble::as_tibble() |>
+  dplyr::filter(cd == "4") |>
+  dplyr::mutate(
+    cytCombo = gsub("^CD4", "", cytCombo)
+  ) |>
+  dplyr::select(-c(cd, timePoint, prid)) |>
+  dplyr::filter(vaccine != "8")
+# tcell_response_data_memory |>
+#  UtilsDataRSV::view_cols()
+# tcell_response_data_memory |>
+#   dplyr::group_by(
+#     vaccine
+#   ) |>
+#   dplyr::mutate(
+#     ptid = gsub("_\\d+$", "", ptid)
+#   ) |>
+#   dplyr::summarise(
+#     ptid_sum = paste0(unique(ptid), collapse = "_")
+#   )
+
+chr_to_vacc_vec <- c(
+  "1" = "Aeras402",
+  "2" = "H56:IC31",
+  "3" = "M72:AS01E",
+  "4" = "MVA85A",
+  "5" = "H1:IC31",
+  "6" = "ID93:GLA-SE",
+  "7" = "BCG",
+  "8" = "Megapool"
+)
+
+tcell_response_data_memory <- tcell_response_data_memory |>
+  dplyr::mutate(
+    vaccine = chr_to_vacc_vec[vaccine]
+  )
+
+# tcell_response_data_memory |>
+#   dplyr::group_by(vaccine, ptid) |>
+#   dplyr::slice(1) |>
+#   dplyr::ungroup() |>
+#   dplyr::group_by(vaccine) |>
+#   dplyr::summarise(count = dplyr::n())
+
+tcell_response_data_baseline <- bl17ExcTbl |>
+  tibble::as_tibble() |>
+  dplyr::filter(cd == "4") |>
+  dplyr::mutate(
+    cytCombo = gsub("^CD4", "", cytCombo)
+  ) |>
+  dplyr::select(-c(cd, timePoint, prid)) |>
+  dplyr::filter(vaccine != "8")
+tcell_response_data_baseline <- tcell_response_data_baseline |>
+  dplyr::mutate(
+    vaccine = chr_to_vacc_vec[vaccine]
+  )
+
+pid_vec <- intersect(
+  tcell_response_data_baseline$ptid,
+  tcell_response_data_memory$ptid
+)
+tcell_response_data_baseline <- tcell_response_data_baseline |>
+  dplyr::filter(ptid %in% pid_vec)
+tcell_response_data_memory <- tcell_response_data_memory |>
+  dplyr::filter(ptid %in% pid_vec)
+usethis::use_data(tcell_response_data_baseline, overwrite = TRUE)
+usethis::use_data(tcell_response_data_memory, overwrite = TRUE)
+```
+
+
