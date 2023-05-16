@@ -7,6 +7,7 @@ format:
 
 # Introduction
 
+## Luminex data
 
 ```{r}
 #| echo: false
@@ -79,6 +80,7 @@ usethis::use_data(lum_tbl, overwrite = TRUE)
 usethis::use_data(meta_data_tbl, overwrite = TRUE)
 ```
 
+## Mtb-specific T cell response data
 
 ```{r}
 #| echo: false
