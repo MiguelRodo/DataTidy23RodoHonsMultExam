@@ -1,6 +1,6 @@
 Package: DataTidy23RodoHonsMultExam
 Title: Data for 2023 honours multivariate exam
-Version: 1.1.0
+Version: 2.0.0
 Authors@R: person("Miguel", "Rodo", , "miguel.rodo@uct.ac.za", role = c("aut", "cre"))
 Maintainer: Miguel Rodo <miguel.rodo@uct.ac.za>
 Description: Data for 2023 honours multivariate exam
