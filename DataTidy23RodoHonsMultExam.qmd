@@ -76,6 +76,10 @@ meta_data_tbl <- meta_data_tbl |>
     sex = Gender,
     ethnicity = Ethnicity
   )
+# remove all observations from meta_data_tbl
+# that are not in lum_tbl
+meta_data_tbl <- meta_data_tbl |>
+  dplyr::semi_join(lum_tbl, by = "pid")
 usethis::use_data(lum_tbl, overwrite = TRUE)
 usethis::use_data(meta_data_tbl, overwrite = TRUE)
 ```
