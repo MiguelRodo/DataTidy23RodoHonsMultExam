@@ -89,10 +89,10 @@ usethis::use_data(meta_data_tbl, overwrite = TRUE)
 ```{r}
 #| echo: false
 #| results: hide
-data("tmax17ExcTbl", package = "VaccCompData")
+data("tmaxSub17ExcTbl", package = "VaccCompData")
 data("bl17ExcTbl", package = "VaccCompData")
 
-tcell_response_data_memory <- tmax17ExcTbl |>
+tcell_response_data_memory <- tmaxSub17ExcTbl |>
   tibble::as_tibble() |>
   dplyr::filter(cd == "4") |>
   dplyr::mutate(
